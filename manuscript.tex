@@ -1,0 +1,145 @@
+\documentclass[submit,PRO]{ipsj}
+\usepackage{PROpresentation}
+\usepackage{cite}
+\usepackage{booktabs} % For formal tables
+\usepackage[table,xcdraw]{xcolor}
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{latexsym}
+\usepackage{relsize}
+\usepackage{xspace}
+\usepackage{jtygm}
+
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+
+
+\def\newblock{\hskip .11em plus .33em minus .07em}
+
+\def\Underline{\setbox0\hbox\bgroup\let\\\endUnderline}
+\def\endUnderline{\vphantom{y}\egroup\smash{\underline{\box0}}\\}
+\def\|{\verb|}
+
+\newcommand{\Rplus}{\protect\hspace{-.1em}\protect\raisebox{.8ex}{\smaller{\smaller\smaller\textbf{+}}}}
+
+\newcommand{\Cpp}{\mbox{C\Rplus\Rplus}\xspace}
+
+
+\PROheadtitle{2018-5-(7): 情報処理学会プログラミング研究会 発表資料 2019年3月19日}
+
+%\setcounter{巻数}{59}%vol53=2012
+%\setcounter{号数}{0}
+%\setcounter{page}{0}
+
+
+\def\tightlist{\itemsep1pt\parskip0pt\parsep0pt}
+
+\usepackage[bookmarks=true,dvipdfmx]{hyperref}
+\usepackage{pxjahyper}
+
+\begin{document}
+\title{SumMag: Elixir マクロのメタプログラミングを用いた並列プログラミング拡張機構 Hastega の解析部の設計と実装}
+\etitle{SumMag: Design and Implementation of an Analyzer an Extension Mechanism by Meta-programming Using Elixir Macros}
+
+\affiliate{kitakyu}{北九州市立大学\\
+University of Kitakyushu}
+
+
+\author{山崎 進}{Susumu Yamazaki}{kitakyu}[zacky@kitakyu-u.ac.jp]
+\author{久江 雄喜}{Yuki Hisae}{kitakyu}[z8mcb008@gmail.com]
+
+%%% 代表者連絡先（氏名，住所，電話，Fax，電子メールアドレス）
+\contact{
+山崎 進
+北九州市立大学
+〒808-0135 北九州市若松区ひびきの1-1
+Tel: (093)675-3263, Fax: (093)695-3395
+E-mail: zacky@kitakyu-u.ac.jp
+}
+
+\begin{abstract}
+我々が現在研究開発している並列最適化拡張機構 Hastega(ヘイスガ)は，(1) プログラミング言語
+Elixir(エリクサー) で書かれたコード中のパイプライン演算子 と map 関数を用いた記述部分を抽出し，(2)
+抽出したコードを並列化・最適化したネイティブコードにコンパイルする．本発表で提案・報告する
+SumMag (サムマグ)は，前者(1)を Elixir マクロを用いて実装したメタプログラミングライブラリである．Elixir
+は，リストとタプルからなる抽象構文木(AST)を操作するようなメタプログラミング機構，Elixir
+マクロを提供しているので，SumMag の実装に用いた．原理としてはパイプライン化された1つ以上の
+map 関数の適用をまとめて抽出して関数として分離し，元の Elixir コードの該当部分を抽出した関数への呼び出しに置き換える．このときに
+map関数で適用される関数を Elixir コードのレベルでインライン展開し，かつ
+map-mapフュージョンを行う．近い将来課題としては，Hastega の残りの機能を実装してファーストリリースとして完成させ
+OSS として公開する．
+\end{abstract}
+
+
+\begin{jkeyword}
+Elixir，並列プログラミング言語，メタプログラミング
+\end{jkeyword}
+
+
+\begin{eabstract}
+A parallel optimization extension mechanism, Hastega, which we are
+researching and developing now, (1) extracts description using pipeline
+operators and map functions from Elixir program code and (2) compiles
+the extracted code into parallelized and optimized native code. SumMag,
+which we will propose and report in this presentation, is a
+meta-programming library is a part of the former (1), and is implemented
+using Elixir macros. Elixir provides Elixir macros, which is a
+meta-programming mechanism that operates abstract syntax trees (ASTs)
+consists of lists and tuples, and SumMag is implemented using them.
+SumMag works to extract one or more pipe-lined applications of map
+functions all together into an separated function, and to replace the
+part of the original code into an invocation to the separated function.
+At this time, SumMag applies inlining and map-map fusion of the
+functions applied in the map functions. In the near future, we will
+implement the rest of functions of Hastega, complete it as the first
+release, and publish it as an OSS.
+\end{eabstract}
+
+\begin{ekeyword}
+Elixir, Parallel programming languages, Meta-programming.
+\end{ekeyword}
+
+\maketitle
+
+\input{description}
+
+\bibliographystyle{ipsjsort}
+\bibliography{reference}
+
+\end{document}
