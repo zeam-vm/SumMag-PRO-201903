@@ -1,4 +1,4 @@
-# GPU-SWoPP-2018
+# SumMag-PRO-201903
 
 ## インストール
 
