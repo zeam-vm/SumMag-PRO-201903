@@ -12,7 +12,7 @@ Elixir(エリクサー)\cite{Elixir}は2012年にJos\'{e} Valimが開発した�
 
 Elixirを用いることで，たとえばウェブシステムのレスポンス性能を大きく改善することができる．Fedrecheskiら\cite{Elixir16}によると，Javaでは毎秒1,200リクエスト程度で急速にレスポンス性能が悪化してしまったのに対し，Elixirでは毎秒1,800リクエスト程度まで耐えられる．
 
-このような背景で我々は Hastega (ヘイスガ)のプロトタイプを開発した\cite{ZACKY18J, Hisae19J, ZACKY19-Hastega, ZACKY19-Hastega-Medium, ZEAM-log}．Hastega は，ウェブアプリケーションの中で行う画像処理や機械学習などの計算負荷の高い処理を，Elixirで簡潔に記述し，サーバー上やエッジ，ウェブクライアント上の CPU や GPU に負荷分散させながら高速に並列実行させることを目指している\cite{ZACKY19-Hastega, ZACKY19-Hastega-Medium}．
+このような背景で我々は Hastega (ヘイスガ)のプロトタイプを開発した\cite{ZACKY18J, Hisae19J, ZACKY19-Hastega, ZACKY19-Hastega-Medium, ZEAM-log}．Hastega は，ウェブアプリケーションの中で行う画像処理や機械学習などの計算負荷の高い処理を，Elixirで簡潔に記述し，サーバー上やエッジ，ウェブクライアント上の CPU や GPU に負荷分散させながら高速に並列実行させることを目指している\cite{ZACKY19-Hastega, ZACKY19-Hastega-Medium}．Hastegaの実現により，計算量爆発の問題に対抗するための有効な計算能力を容易に向上できる．
 
 整数演算を行うベンチマークでは，Hastegaのプロトタイプは，元のElixirコードの4-8倍の速度向上，Python\cite{Python}のCuPy\cite{CuPy}を用いてGPUを駆動したコードの3倍以上の速度向上を得られた\cite{ZACKY18J}．線形回帰を行うベンチマークでは，Hastegaのプロトタイプは，元のElixirコードの5-17倍，インライン展開したElixirコードの4-8倍の速度向上が得られた\cite{Hisae19J}．この線形回帰のベンチマークでは，データの流量が増大すると並列化のためのコストの元が取れて速度向上比が大きくなる様子が観測されたことと，データ転送に時間がかかることと，分配アルゴリズムがコアに線形に展開するアルゴリズムであることから，分配するコア数が増えると極端に性能が悪化する様子が観測された\cite{Hisae19J}．
 
