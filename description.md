@@ -25,4 +25,35 @@ Elixir は，リストとタプルからなる抽象構文木(AST)を操作す�
 map関数で適用される関数を Elixir コードのレベルでインライン展開し，かつ
 map-mapフュージョンを行う．
 
-本報告のこの後の構成は次のとおりである: 
+本報告のこの後の構成は次のとおりである: 第\ref{sec:Elixir}章で 第\ref{sec:Zen}章で 第\ref{sec:Hastega}章で 第\ref{sec:macro}章で 第\ref{sec:map-map}章で 第\ref{sec:design}章で 第\ref{sec:summary}章で 
+
+# Elixir(エリクサー)
+\label{sec:Elixir}
+
+Elixir(エリクサー)\cite{Elixir}は2012年にJos\'{e} Valimが開発した並列プログラミング言語である．Jos\'{e}は Ruby on Rails\cite{RoR}のコミッタの1人でもあることから，ElixirはRuby\cite{Ruby}の影響を強く受けている．Elixir開発当時では，Rubyには並列プログラミング機構が十分備わっていなかったことから，アクターモデル\cite{Hewitt:1973:UMA:1624775.1624804}に基づく並行プログラミングモデルを採用するなど，並列プログラミングのための数々の優れた特長を有する関数型言語Erlang\cite{Erlang}を母体とした．
+
+このような背景から，Elixirは Ruby on Rails と同等のウェブアプリケーションフレームワークを実現するのに必要な機能を盛り込んだ言語仕様を備えており，その1つがメタプログラミング機構である．Elixirのメタプログラミング機構は，LISP\cite{McCarthy:1960:RFS:367177.367199}のメタプログラミング機構と似ており，タプルとリストで構成される抽象構文木(AST)を操作することで行う．プログラムコードからASTを生成する関数が `quote` であり，ASTに新しいコードや値を挿入する関数が `unquote` である．この詳細については，第\ref{sec:macro}章で述べる．ElixirはLISP同様，核となる言語仕様(Elixirカーネル言語)をメタプログラミングを用いて拡張している．Elixirは，Elixirカーネル言語を，Erlang VMのバイトコードBEAMにコンパイルすることで，Erlang VMで実行できるようにしている．
+
+以上のようなことから，「Elixirは，Erlangを母とし，Rubyを父とし，LISPを祖父に持つプログラミング言語である」と俗に言われる．
+
+RubyにおけるRuby on Railsに相当する Elixir のウェブアプリケーションフレームワークが，Phoenix\cite{Phoenix}である．Phoenixはレスポンス性能が極めて高いことから，オンラインゲームのバックエンドとして用いられる採用事例が目立つ．ElixirとPhoenixは後発であるにも関わらず，普及が目覚ましく，2016年の時点で1109の企業がプロダクション採用している\cite{ElixirUsersSurvey}．
+
+ElixirとPhoenixの名は，ファイナルファンタジーに登場するアイテムと幻獣の名称に由来する．ファイナルファンタジーから名をとったのは，これらの創始者であるJos\'{e} ValimとChris McCordをはじめとするコミッターたちがファイナルファンタジーオンラインの大ファンであったからである．Elixirはファイナルファンタジーでは全回復する薬として描かれているが，もともとは錬金術師が求めた不老不死の薬の名称である．一方Phoenixは，自分の身を炎の中に投じて再び蘇る伝説上の不老不死の炎の鳥の名称である．このようにElixirとPhoenixが不老不死の象徴の名称を取るのには理由がある．それはElixirとPhoenixが耐障害性が極めて高いからである．Elixirは，並行プログラミング機構として，メモリ空間をGCを含めて完全に分離するプロセスモデルを採用している．また，監視プロセスを用いて，異常終了したプロセスを検知して再起動する仕組みを備えている．Phoenixではこれらを利用して，高負荷をかけたり不正なデータを送信したりしても，異常終了したプロセスを監視プロセスによって再起動させる設計にしている．このような様子が不老不死であるように見えることから，ElixirとPhoenixという不老不死の象徴の名称をつけている．
+
+# Elixir Zen Style
+\label{sec:Zen}
+
+# Hastega(ヘイスガ)
+\label{sec:Hastega}
+
+# Elixir マクロ
+\label{sec:macro}
+
+# map-mapフュージョン
+\label{sec:map-map}
+
+# SumMag(サムマグ)の設計
+\label{sec:design}
+
+# まとめと将来課題
+\label{sec:summary}
