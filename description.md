@@ -25,7 +25,7 @@ Elixir は，リストとタプルからなる抽象構文木(AST)を操作す�
 map関数で適用される関数を Elixir コードのレベルでインライン展開し，かつ
 map-mapフュージョンを行う．
 
-本報告のこの後の構成は次のとおりである: 第\ref{sec:Elixir}章では，Elixirについて他言語との関連や名称の由来などについて紹介する．第\ref{sec:Zen}章で 第\ref{sec:Hastega}章で 第\ref{sec:macro}章で 第\ref{sec:map-map}章で 第\ref{sec:design}章で 第\ref{sec:summary}章で 
+本報告のこの後の構成は次のとおりである: 第\ref{sec:Elixir}章では，Elixirについて他言語との関連や名称の由来などについて紹介する．第\ref{sec:Zen}章では，3つのプログラミングスタイルについて触れ，そのうちの1つを特に重要視していることを詳述する． 第\ref{sec:Hastega}章で 第\ref{sec:macro}章で 第\ref{sec:map-map}章で 第\ref{sec:design}章で 第\ref{sec:summary}章で 
 
 # Elixir(エリクサー)
 \label{sec:Elixir}
