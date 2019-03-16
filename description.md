@@ -16,7 +16,7 @@ Elixirを用いることで，たとえばウェブシステムのレスポン�
 
 整数演算を行うベンチマークでは，Hastegaのプロトタイプは，元のElixirコードの4-8倍の速度向上，Python\cite{Python}のCuPy\cite{CuPy}を用いてGPUを駆動したコードの3倍以上の速度向上を得られた\cite{ZACKY18J}．線形回帰を行うベンチマークでは，Hastegaのプロトタイプは，元のElixirコードの5-17倍，インライン展開したElixirコードの4-8倍の速度向上が得られた\cite{Hisae19J}．この線形回帰のベンチマークでは，データの流量が増大すると並列化のためのコストの元が取れて速度向上比が大きくなる様子が観測されたことと，データ転送に時間がかかることと，分配アルゴリズムがコアに線形に展開するアルゴリズムであることから，分配するコア数が増えると極端に性能が悪化する様子が観測された\cite{Hisae19J}．
 
-Hastega を本格的に実装するにあたり，(1)Elixirで書かれたコード中のパイプライン演算子とmap関数を用いた記述部分を抽出する部分と，(2)抽出したコードを並列化・最適化したネイティブコードにコンパイラする部分の，2つの構成要素に分割する設計方針を採用した．本報告で提案・報告する SumMag (サムマグ)は，前者(1)を Elixir マクロを用いて実装したメタプログラミングライブラリである．
+Hastega を本格的に実装するにあたり，(1) Elixirで書かれたコード中のパイプライン演算子とmap関数を用いた記述部分を抽出する部分と，(2) 抽出したコードを並列化・最適化したネイティブコードにコンパイラする部分の，2つの構成要素に分割する設計方針を採用した．本報告で提案・報告する SumMag (サムマグ)は，前者(1)を Elixir マクロを用いて実装したメタプログラミングライブラリである．
 
 Elixir は，リストとタプルからなる抽象構文木(AST)を操作するようなメタプログラミング機構，Elixir
 マクロを提供している．そこで我々は，SumMag の実装にElixir マクロを用いた．
@@ -25,7 +25,7 @@ Elixir は，リストとタプルからなる抽象構文木(AST)を操作す�
 map関数で適用される関数を Elixir コードのレベルでインライン展開し，かつ
 map-mapフュージョンを行う．
 
-本報告のこの後の構成は次のとおりである: 第\ref{sec:Elixir}章では，Elixirについて他言語との関連や名称の由来などについて紹介する．第\ref{sec:Zen}章では，3つのプログラミングスタイルについて触れ，そのうちの1つを特に重要視していることを詳述する． 第\ref{sec:Hastega}章で 第\ref{sec:macro}章で 第\ref{sec:map-map}章で 第\ref{sec:design}章で 第\ref{sec:summary}章で 
+本報告のこの後の構成は次のとおりである: 第\ref{sec:Elixir}章では，Elixirについて他言語との関連や名称の由来などについて紹介する．第\ref{sec:Zen}章では，3つのプログラミングスタイルについて触れ，そのうちの1つを特に重要視していることを詳述する． 第\ref{sec:map-map}章では，map関数の最適化であるmap-mapフュージョンを紹介し，第\ref{sec:Hastega}章で，Hastegaについて，原理や構成要素，名称の由来などについて詳述し，原理のところでmap-mapフュージョンの必要性についても説明する． 第\ref{sec:macro}章では，Elixirのメタプログラミング機構であるElixirマクロについて紹介し，例示する．第\ref{sec:design}章で 第\ref{sec:summary}章で 
 
 # Elixir(エリクサー)
 \label{sec:Elixir}
@@ -50,20 +50,20 @@ Elixirのコード例については，次の第\ref{sec:Zen}章で紹介する�
 \centering
   \begin{tabular}{c}
 
-    \begin{minipage}{0.4\hsize}
+    \begin{minipage}{0.5\hsize}
     \centering
 {\small
 \begin{verbatim}
 1..1_000_000
- |> Enum.to_list
- |> R.func()
+|> Enum.to_list
+|> R.func()
 
 defmodule R do
-	 def func( [] ), do: []
-	def func( [ head | tail ] ) do 
-		[ head |> M.foo() |> M.bar()
+	def func( [] ), do: []
+	def func( [ head | tail ] ) do
+		[ head |> M.foo() |> M.bar() 
 		| func(tail) ]
-    end
+	end
 end
 
 defmodule M
@@ -72,17 +72,17 @@ defmodule M
 end
 \end{verbatim}
 }
-		\caption{再帰呼出スタイルのElixirコード例}
+		\captionof{figure}{再帰呼出スタイルのElixirコード例}
 		\ecaption{An Elixir code example using recursive call}
 		\label{fig:recursive}
 		\end{minipage}
 
-    \begin{minipage}{0.3\hsize}
+    \begin{minipage}{0.5\hsize}
     \centering
 {\small
 \begin{verbatim}
 1..1_000_000
-|> Enum.map(&M.foo(&1)) 
+|> Enum.map(&M.foo(&1))
 |> Enum.map(&M.bar(&1))
 
 defmodule M
@@ -91,33 +91,32 @@ defmodule M
 end
 \end{verbatim}
 }
-		\caption{Enum.mapスタイルのElixirコード例(Elixir Zen Style)}
-		\ecaption{The Elixir Zen Style: An Elixir code example using Enum.map}
+		\captionof{figure}{Enum.mapスタイルのElixirコード例 (Elixir Zen Style)}
+		\ecaption{An Elixir code example using Enum.map}
 		\label{fig:zen}
 		\end{minipage}
-
-    \begin{minipage}{0.4\hsize}
-    \centering
-{\small
-\begin{verbatim}
-int i;
- int[] array = new int[1000000];
- for(i = 0; i < 1000000; i++) 
-	array[i] = i + 1; 
-for(i = 0; i < 1000000; i++) 
-	array[i] = foo(array[i]);
- for(i = 0; i < 1000000; i++) 
-	array[i] = bar(array[i]);
-\end{verbatim}
-}
-		\caption{ループスタイルのJavaコード例}
-		\ecaption{A Java code example using loop}
-		\label{fig:loop}
-		\end{minipage}
-
 	\end{tabular}
 \end{figure*}
 
+
+\begin{figure}[b]
+\centering
+{\small
+\begin{verbatim}
+int i;
+int [] array = new int[1000000];
+for(i = 0; i < 1000000; i++)
+	array[i] = i + 1;
+for(i = 0; i < 1000000; i++)
+	array[i] = foo(array[i]);
+for(i = 0; i < 1000000; i++)
+	array[i] = bar(array[i]);
+\end{verbatim}
+}
+\caption{ループスタイルのJavaコード例}
+\ecaption{A Java code example using loop}
+\label{fig:loop}
+\end{figure}
 
 
 \figref{fig:recursive}は，関数型言語で一般的な再帰呼出スタイルによるElixirプログラム例である．コードの説明は次のとおりである:
@@ -159,14 +158,124 @@ for(i = 0; i < 1000000; i++) 
 
 この価値観があるため，我々は Elixir を関数型パラダイムとして捉えるよりも，別のパラダイムとして捉えるべきなのではないかと考えている．たとえば**データ変換型パラダイム**とでも呼ぶべきなのではないだろうか．
 
-# Hastega(ヘイスガ)
+# map-mapフュージョン
+\label{sec:map-map}
+
+map-mapフュージョンは，関数型言語において一般的によく用いられるmap関数に関する最適化技術の1つで，複数のmap呼出しを1つのmap呼出しにまとめることで高速化する．\figref{fig:map-map}は，\figref{fig:zen}のコードにmap-mapフュージョンを適用した例である．
+
+\begin{figure}[t]
+  \centering
+{\small
+\begin{verbatim}
+1..1_000_000
+|> Enum.map( &1 |> M.foo() |> M.bar() )
+\end{verbatim}
+}
+	\caption{図\ref{fig:zen}のコードにmap-mapフュージョンを適用した例}
+	\ecaption{An application of map-map fusion optimization to the code of Fig. \ref{fig:zen}}
+	\label{fig:map-map}
+\end{figure}
+
+
+# Hastega (ヘイスガ)
 \label{sec:Hastega}
+
+Hastega \cite{ZACKY18J, Hisae19J, ZACKY19-Hastega, ZACKY19-Hastega-Medium, ZEAM-log}は，Elixir Zen Style (\figref{fig:zen})のコードを最適化してネイティブコード化するプログラミング言語処理系である．
+
+\figref{fig:zen}のコード相当のプログラムを OpenCL \cite{OpenCL}で記述したコードを\figref{fig:codeOpenCL}に示す．Hastega の原理は，\figref{fig:zen}と\figref{fig:codeOpenCL}のコードに類似性が多く，機械的な変換でElixir Zen Style のコードからOpenCLのコードにコンパイルできるだろう，という着想に由来する\cite{ZACKY18J}．
+
+\begin{figure}[t]
+  \centering
+{\small
+\begin{verbatim}
+__kernel void calc(
+	__global long* input,
+	__global long* outoput) {
+	size_t i = get_global_id(0);
+	long temp = input[i];
+	temp = foo(temp);
+	temp = bar(temp);
+	output[i] = temp;
+}
+\end{verbatim}
+}
+	\caption{図\ref{fig:zen}のコードをOpenCLのコードに手で変換したコード}
+	\ecaption{A sample code of OpenCL transformed by hand from the code of Fig. \ref{fig:zen}}
+	\label{fig:codeOpenCL}
+\end{figure}
+
+
+このようなコードはSIMD(Single Instruction Multiple Data)アーキテクチャで並列実行するのに向いている．最近の Intel CPU にはSIMD命令が備わっており，GPUもSIMDアーキテクチャに基づいていることから，CPUやGPUで高速実行できる可能性が高い．
+
+しかも Elixir Zen Style のコードは容易に並列性を稼いだり調整したりすることができる．\figref{fig:zen}のコードは，最大1,000,000並列で実行できることが明白である．`Enum.map`の中に記述されている処理は，互いに依存関係や副作用がないことから，並列に実行してもかまわないことが読み取れる．このような依存関係や副作用の解析は，`Enum.map`の中も Elixir Zen Style で記述する限りでは容易であると考えられる．しかも，1,000,000並列の処理を実際のSIMDコアにどのように割り当てるかについては，とくにそのことを指定したり依存したりするような記述がないことから，処理系に自由な裁量が与えられていると考えて良い．
+
+Hastega によるコード生成の前段階で，map-mapフュージョンをあらかじめ適用しておくことが望ましい．その理由は，SIMDコアに分配して収集する処理が性能上のボトルネックになるためである．我々はそのことを線形回帰のHastegaプロトタイプの実験によって確認した\cite{Hisae19J, ZACKY19-Hastega-Medium}．
+
+Hastegaを開発するにあたって，他に転用できる可能性がある次の2つのライブラリを切り離す設計を採用した:
+
+* SumMag (サムマグ): 一連のパイプラインで繋がった1つ以上の Enum.map の呼び出しを行うコードを抽出して独立した関数として定義し，元のコードを変更して，その関数を呼び出すように書き換えるメタプログラミングライブラリ
+* Magicite (マジサイト): Elixir-LLVM バインディング
+
+Hastega，SumMag，Magicite の名の由来もファイナルファンタジーからである．ファイナルファンタジーでは，ヘイスガは仲間を高速化する魔法の中でも最強の部類に相当する魔法として描かれていた．これにあやかり，Hastega という名称には，計算機を高速化する「魔法」のような存在でありたいという願いを込めている．SumMagは，ゲーム中で「召喚魔法(Summon Magic)」を表す略語である．ヘイスガは召喚魔法ではないが，後に開発するライブラリに幻獣の名称をつけようと考えているため，召喚と魔法の両方に関係する名称をつけた．メタプログラミングという召喚魔法に相当するような強力な技術を使いこなしたいという思いもある．また，Magiciteは，魔石のことである．
 
 # Elixir マクロ
 \label{sec:macro}
 
-# map-mapフュージョン
-\label{sec:map-map}
+Elixir マクロは，Jos\'{e}が開発したメタプログラミング機構である．
+
+Elixir では，タプルとリストで構成されるASTを操作することでメタプログラミングを実現する．したがって，LISP\cite{McCarthy:1960:RFS:367177.367199}にとてもよく似ている．
+
+Elixir マクロでできることは，LISPとほぼ同様であり，やらないほうがいいこともLISPと似ている．とくに Elixir でマクロを使うと可読性が極めて低下するので，マクロでないとできない場合以外ではマクロを使うべきではないというソフトウェア工学的な原則が言われているが，それもまた LISP と同じ傾向である．
+
+Elixir マクロの基本構文は次の2つである:
+
+* プログラムコードからASTを生成する `quote/2`
+* ASTに新しいコードや値を挿入する `unquote/1`
+
+\begin{figure*}[t]
+  \centering
+{\small
+\begin{verbatim}
+ quote do: 1..1_000_000 |> Enum.map(& &1 * 2)
+{:|>, [context: Elixir, import: Kernel],
+ [
+   {:.., [context: Elixir, import: Kernel], [1, 1000000]},
+   {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :map]}, [],
+    [{:&, [], [{:*, [context: Elixir, import: Kernel], [{:&, [], [1]}, 2]}]}]}
+ ]}
+\end{verbatim}
+}
+	\caption{quote/2の実行例}
+	\ecaption{An example of execution results of quote/2}
+	\label{fig:quote}
+\end{figure*}
+
+`quote/2`の実行例を\figref{fig:quote}に示す．これは，次のようなElixir Zen Style であるコード片のASTを生成している:
+
+* `& &1 * 2`は，第1引数の値を2倍した値を返す無名関数である．したがって，`1..1_000_000 |> Enum.map(& &1 * 2)` によって，1から1,000,000までの値それぞれを2倍したリストを生成するプログラム片を表す．
+* `{}`で囲われた領域はタプルである．ASTのノードは3つの要素を持つタプルで表す．第1要素はオペレータを表し，第2要素は実行時間環境，第3要素は子ノードのリストを表している．
+* `[]`で囲われた領域はリストである．
+* ASTのルートのオペレータは`:|>`であるが，これはパイプライン演算子`|>`を表している．先頭の`:`はアトムであることを示している．
+* ASTのルートの第2要素の`[context: Elixir, import: Kernel]`は，キーワードリストというリストの特別な場合である．キーワードリストはElixirにおいて写像を表す一表現方法である．`context`という名のアトムをキーにして，`Elixir` モジュールが対応していて，`import`という名のアトムをキーにして `Kernel`モジュールが対応している．`Elixir` モジュールと`Kernel`モジュールは，どちらもElixirが標準で提供するモジュールである．これにより，パイプライン演算子の実行時環境は，`Elixir`モジュールの中で実行されているというコンテキストで実行されており，その中で`Kernel`モジュールがインポートされているということを意味する．\figref{fig:quote}は，Elixirの対話シェルである`iex`コマンド上で実行したので，このような実行時環境となっている．
+
+ASTのルートの1番目の子ノード`{:.., ..., [1, 1000000]}`は，範囲演算子`..`を使った記述 `1..1_000_000` を表している．このノードの1番目の子ノードが1，2番目の子ノードが1,000,000である．このようにASTのノードは3つの要素を持つタプルの他に，直接値を表すこともある．内部表現では整数の中の`_`は無視されている．
+
+ASTのルートの2番目の子ノードは，`Enum.map(& &1 * 2)`を表している．その本体は，次のようなASTノードの3つ組である:
+
+* 第1要素は，演算子`.`である．その実行時環境は空である．1番目の子ノードが`Enum`モジュール，2番目の子ノードが`:map`である．
+* 第2要素の実行時環境は空である．
+* 子ノードとして，演算子`&`を持つ．
+
+演算子`&`のノードは，無名関数を表す．
+
+* その実行時環境は空である．
+* 子ノードとして，乗算演算子`*`を持つ．
+	* その実行時環境は`iex`上の環境である．
+	* 第1子ノードは演算子`&`であり，その子ノードは1である．これにより`&1`すなわち第1引数を表す．
+	* 第2子ノードは2である．
+	* これにより，第1引数に2を乗じたものを表す．
+
+`unquote/1`は`quote/2`の中でのみ使用できる．
 
 # SumMag(サムマグ)の設計
 \label{sec:design}

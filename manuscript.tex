@@ -1,5 +1,6 @@
 \documentclass[submit,PRO]{ipsj}
 \usepackage{PROpresentation}
+\usepackage{caption}
 \usepackage{cite}
 \usepackage{booktabs} % For formal tables
 \usepackage[table,xcdraw]{xcolor}
@@ -60,6 +61,19 @@
 
 \newcommand{\Cpp}{\mbox{C\Rplus\Rplus}\xspace}
 
+% キャプション内のレイアウト調整
+\makeatletter
+\newif\ifcap@minipage
+\cap@minipagefalse
+\let\minipagebak\minipage
+\def\minipage{\cap@minipagetrue\minipagebak}
+\let\@captionbak\@caption
+\def\@caption{%
+ \ifcap@minipage
+  \capwidth\hsize\ecapwidth\hsize
+ \fi
+ \@captionbak}
+\makeatother
 
 \PROheadtitle{2018-5-(7): 情報処理学会プログラミング研究会 発表資料 2019年3月19日}
 
