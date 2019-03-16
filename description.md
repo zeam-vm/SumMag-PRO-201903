@@ -40,8 +40,103 @@ RubyにおけるRuby on Railsに相当する Elixir のウェブアプリケー�
 
 ElixirとPhoenixの名は，ファイナルファンタジーに登場するアイテムと幻獣の名称に由来する．ファイナルファンタジーから名をとったのは，これらの創始者であるJos\'{e} ValimとChris McCordをはじめとするコミッターたちがファイナルファンタジーオンラインの大ファンであったからである．Elixirはファイナルファンタジーでは全回復する薬として描かれているが，もともとは錬金術師が求めた不老不死の薬の名称である．一方Phoenixは，自分の身を炎の中に投じて再び蘇る伝説上の不老不死の炎の鳥の名称である．このようにElixirとPhoenixが不老不死の象徴の名称を取るのには理由がある．それはElixirとPhoenixが耐障害性が極めて高いからである．Elixirは，並行プログラミング機構として，メモリ空間をGCを含めて完全に分離するプロセスモデルを採用している．また，監視プロセスを用いて，異常終了したプロセスを検知して再起動する仕組みを備えている．Phoenixではこれらを利用して，高負荷をかけたり不正なデータを送信したりしても，異常終了したプロセスを監視プロセスによって再起動させる設計にしている．このような様子が不老不死であるように見えることから，ElixirとPhoenixという不老不死の象徴の名称をつけている．
 
+Elixirのコード例については，次の第\ref{sec:Zen}章で紹介する．
+
 # Elixir Zen Style
+
 \label{sec:Zen}
+
+\begin{figure*}[t]
+\centering
+  \begin{tabular}{c}
+
+    \begin{minipage}{0.4\hsize}
+    \centering
+{\small
+\begin{verbatim}
+1..1_000_000
+ |> Enum.to_list
+ |> R.func()
+
+defmodule R do
+	 def func( [] ), do: []
+	def func( [ head | tail ] ) do 
+		[ head |> M.foo() |> M.bar()
+		| func(tail) ]
+    end
+end
+
+defmodule M
+	def foo(n), do: n * 2
+	def bar(n), do: n + 1
+end
+\end{verbatim}
+}
+		\caption{再帰呼出スタイルのElixirコード例}
+		\ecaption{An Elixir code example using recursive call}
+		\label{fig:recursive}
+		\end{minipage}
+
+    \begin{minipage}{0.3\hsize}
+    \centering
+{\small
+\begin{verbatim}
+1..1_000_000
+|> Enum.map(&M.foo(&1)) 
+|> Enum.map(&M.bar(&1))
+
+defmodule M
+	def foo(n), do: n * 2
+	def bar(n), do: n + 1
+end
+\end{verbatim}
+}
+		\caption{}
+		\ecaption{}
+		\label{fig:zen}
+		\end{minipage}
+
+    \begin{minipage}{0.4\hsize}
+    \centering
+{\small
+\begin{verbatim}
+int i;
+ int[] array = new int[1000000];
+ for(i = 0; i < 1000000; i++) 
+	array[i] = i + 1; 
+for(i = 0; i < 1000000; i++) 
+	array[i] = foo(array[i]);
+ for(i = 0; i < 1000000; i++) 
+	array[i] = bar(array[i]);
+\end{verbatim}
+}
+		\caption{}
+		\ecaption{}
+		\label{fig:loop}
+		\end{minipage}
+
+	\end{tabular}
+\end{figure*}
+
+
+
+\figref{fig:recursive}は，関数型言語で一般的な再帰呼出スタイルによるElixirプログラム例である．コードの説明は次のとおりである:
+
+* `1..1_000_000` は，1から1,000,000までの整数の範囲を表す．
+* `Enum.to_list` は，引数で与えられた値をリストに変換する．
+* `|>` は**パイプライン演算子**である．パイプライン演算子は2項演算子であり，左辺の値を右辺の関数の第1引数として与え，右辺の関数の引数を第2引数以下に繰り下げて，関数を呼び出す．
+* したがって，`1..1_000_000 |> Enum.to_list` は，`Enum.to_list(1..1_000_000)`と等価である．すなわち，1から1,000,000までの整数を要素として持つリストを生成する．
+* 同様に `1..1_000_000 |> Enum.to_list |> R.func()` は，`R.func(Enum.to_list(1..1_000_000))` と等価である．パイプライン演算子により，コードを読むときに，左から右へ，上から下へ，自然な流れで読むことができるようになり，括弧のネスティングにより可読性が落ちることを防ぐ．
+* `R.func` は，モジュール`R`に定義されている関数`func`のことである．
+* `defmodule M do ... end` は，`...` を本体として持つモジュール`M`を定義する．
+	* `def func(arg) do ... end` により，`...` を本体として持つ，引数 `arg` の関数 `func` を定義する．`do ... end` が1行で記述できる場合には，`def func(arg), do: ...` と書いても良い．
+	* 引数の数をアリティと呼ぶ．異なるアリティを持つ同名の関数は，異なる関数として区別される．Elixirでは関数を厳密に区別するために，たとえば`R.func/1`というような記法を用いる．これは，モジュール`R`で関数名`func`，アリティが1の関数，という意味である．
+	* 関数`M.foo/1`は，第1引数の値を2倍した値を返す関数である．同様に関数`M.bar/1`は，第1引数の値を1加えた値を返す関数である．このような関数はLisp同様に無名関数で定義することもできるが，本報告では説明を割愛した．
+* 同じアリティを持つ同名の関数の定義が複数あるときには，なんらかの条件で分岐して実行される．たとえば，関数`R.func/1`では，空リスト`[]`を引数にする場合が先に定義されていて，リスト `[head | tail]` が引数である場合が後で定義されている．この場合，先に引数が空リストにマッチするかを評価し，マッチすれば空リストの場合の関数定義を実行する．マッチしなければ，次の定義であるリストにマッチするかを評価し，マッチすればリストの場合の関数定義を実行する．マッチしなければ，`FunctionClauseError`を発生させる．このように動的に呼び分ける仕組みを，**関数パターンマッチ**と呼ぶ．
+* 関数`R.func/1`の引数が空リスト`[]`である場合には，空リストを返す．
+* 関数`R.func/1`の引数が空リストではないリストである場合には，LISPの`car`にあたる部分を`head`に，`cdr`にあたる部分を`tail`にそれぞれ束縛する．
+
+
 
 # Hastega(ヘイスガ)
 \label{sec:Hastega}
